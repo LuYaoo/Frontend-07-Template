@@ -1,0 +1,129 @@
+<div class="green"></div>
+<div class="yellow"></div>
+<div class="red"></div>
+
+<button onclick="go1()">Promiss 方式</button>
+<button onclick="go2()">async/await方式</button>
+<button id="next" onclick="go3()">手动方式</button>
+<button onclick="go4()">generator方式</button>
+
+
+
+<style>
+  div{
+    background-color: gray;
+    display: inline-block;
+    margin: 30px;
+    height: 50px;
+    width: 50px;
+    border-radius: 50px;
+  }
+.red.light{
+background-color: red;
+}
+.yellow.light{
+background-color: yellow;
+}
+.green.light{
+background-color: green;
+}
+</style>
+
+<script>
+  function red() {
+    var lights=document.getElementsByTagName("div");
+    for(let i=0;i<3;i++){
+      lights[i].classList.remove("light");
+    }
+    document.getElementsByClassName("yellow")[0].classList.add("light")
+  }
+  function yellow() {
+    var lights=document.getElementsByTagName("div");
+    for(let i=0;i<3;i++){
+      lights[i].classList.remove("light");
+    }
+    document.getElementsByClassName("green")[0].classList.add("light")
+  }
+  function green() {
+    var lights=document.getElementsByTagName("div");
+    for(let i=0;i<3;i++){
+      lights[i].classList.remove("light");
+    }
+    document.getElementsByClassName("red")[0].classList.add("light")
+  }
+
+  function sleep(t) {
+    return new Promise((resolve,reject)=>{
+      setTimeout(resolve,t);
+    })
+  }
+
+  function go1() {
+    green()
+    sleep(1000).then(()=>{
+      yellow();
+      return sleep(2000)
+    }).then(()=>{
+      red();
+      return sleep(500)
+    }).then(go)
+  }
+
+  function happen(element,eventName) {
+    return new Promise((resolve,reject)=>{
+      element.addEventListener(eventName,resolve,{once:true});
+    })
+  }
+
+  async function go2() {
+    while (true) {
+    green();
+    await sleep(500);
+    yellow();
+    await sleep(100);
+    red();
+    await sleep(300)
+    }
+  }
+
+  async function go3() {
+    while (true) {
+    green();
+    await happen(document.getElementById("next"),"click");
+    yellow();
+    await happen(document.getElementById("next"),"click");
+    red();
+    await happen(document.getElementById("next"),"click");
+    }
+  }
+
+  //co框架提供的 generator/yield方式
+  function* go4() {
+    while (true) {
+    green();
+    yield sleep(500)
+    yellow();
+    yield sleep(100)
+    red();
+    yield sleep(300)
+    }
+  }
+  
+  function generatorRun(iterator) {
+    let {value,done}=iterator.next();
+    if(done) return;
+      if(value instanceof Promise){
+        value.then(()=>{
+          generatorRun(iterator);
+        })
+      }
+  }
+
+  function co(generator) {
+    return function () {
+      return generatorRun(generator());
+    }
+  }
+  go4=co(go4);
+
+</script>
