@@ -1,0 +1,81 @@
+
+
+<script>
+
+/* title：字符串分析算法
+1 字典树: 大量高重复字符串的存储和分析
+2 KMP ：在长字符串里找模式
+3 Wildcard : 带通配符的字符串模式
+4 正则 字符串通用配置模式
+5 状态机 通用的字符串分析
+6 LL LR　字符串多层级结构分析
+*/
+let $ = Symbol("$");
+//ES6 引入了一种新的原始数据类型 Symbol ，表示独一无二的值，最大的用法是用来定义对象的唯一属性名
+//ES6 数据类型除了 Number 、 String 、 Boolean 、 Objec t、 null 和 undefined ，还新增了 Symbol
+/*
+let sy = Symbol("KK");
+console.log(sy);   // Symbol(KK)
+typeof(sy);        // "symbol"
+// 相同参数 Symbol() 返回的值不相等
+let sy1 = Symbol("kk"); 
+sy === sy1;       // false
+详细：https://www.runoob.com/w3cnote/es6-symbol.html
+*/
+
+/*
+字典树就是哈希树的一种特例
+哈希树在字符串领域最直接应用就体现在字典树上
+*/
+
+class Trie{
+    constructor(){
+        this.root =Object.create(null);
+    }
+    insert(word){
+        let node = this.root;
+        for(let c of word){
+            if(!node[c]) {
+                node[c]=Object.create(null);
+            }
+            node =node[c];
+        }
+        if(!($ in node)){
+            node[$]=0;
+        }
+        node[$]++;
+    }
+    most(){
+        let max =0;
+        let maxWord =null;
+        let visit = (node,word) => {
+            if(node[$] && node[$] >max){
+                max = node[$];
+                maxWord = word;
+            }
+            for(let p in node){
+                visit(node[p],word+p);
+            }
+        }
+        visit(this.root,"");
+        console.log('maxWord=>',maxWord);
+        console.log('max=>',max);
+        console.log(maxWord,max);
+    }
+}
+
+function randomWord(length) {
+    var s="";
+    for(let i = 0;i < length; i++){
+        s += String.fromCharCode(Math.random()*26 + "a".charCodeAt(0));
+        return s;
+    }
+}
+
+let trie =new Trie();
+
+for(let i=0;i<100000;i++){
+    trie.insert(randomWord(4));
+}
+
+</script>
