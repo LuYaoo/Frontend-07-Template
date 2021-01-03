@@ -1,0 +1,105 @@
+<div id="container">
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字 文字
+</div>
+<div id="dragable"  style="display: inline-block;width: 100px;height: 100px;background-color: pink;"></div>
+
+<script>
+    //重点
+    //DOM API  document.createRange()
+    //CSSOM 视觉效果离不开
+
+    let dragable =document.getElementById("dragable");
+    //dragable的初始位置，在up中更新
+    let baseX=0,baseY=0;
+    dragable.addEventListener("mousedown",function(event){
+        //如果直接在dragable上箭头，容易出现鼠标拖动太快而离开dragable div的区域时，事件结束，产生拖断效果
+        //在现代浏览器上，在document上添加监听mouse事件，能产生全局捕捉鼠标事件的效果，即使鼠标移除浏览器
+        //也能捕捉到事件
+        //mouseup时，要把mousedown，mousemove 移除掉
+        //所以添加两个变量 up,move
+        // 记录鼠标点击时，初始位置，startX,startY
+        let startX =event.clientX,startY=event.clientY;
+        let up = event=>{
+            baseX=baseX+event.clientX-startX;
+            baseY=baseY+event.clientY-startY;
+            document.removeEventListener("mousemove",move);
+            document.removeEventListener("mouseup",up);
+        }
+        let move= event =>{
+            let range =getNearest(event.clientX,event.clientY);
+            //range内置的insertNode函数（DOM API）
+            range.insertNode(dragable);
+            // 使用了insertNode，不用在mouseup时移除 range里的(dragable)；
+            // 因为DOM操作会把DOM树上原来东西默认给移除的
+            // dragable.style.transform =`translate(${baseX+event.clientX-startX}px,${baseY+event.clientY-startY}px)`
+        }
+        document.addEventListener("mousemove",move)
+        document.addEventListener("mouseup",up)
+    })
+
+    let ranges = [];
+
+    let container =document.getElementById("container");
+
+    for(let i=0;i<=container.childNodes[0].textContent.length;i++){
+        let range = document.createRange();
+        range.setStart(container.childNodes[0],i);
+        range.setEnd(container.childNodes[0],i);
+        // console.log(range.getBoundingClientRect());
+        ranges.push(range);
+
+    }
+
+
+    function getNearest(x,y){
+        let min =Infinity;
+        let nearest=null;
+
+        for(let range of ranges){
+            let rect = range.getBoundingClientRect();
+            let distance=(rect.x-x)**2 + (rect.y-y)**2;
+            if(distance<min){
+                nearest=range;
+                min=distance;
+            }
+        }
+        return nearest;
+    }
+
+    //去除拖动选中文字的问题
+    document.addEventListener("selectstart",event=>event.preventDefault());
+
+    /*Range小结*/
+    /*
+    Range 经常配合 selection 被用来操作文字范围做划词插件和编辑器。
+     document.addEventListener('mouseup', () => {
+        var html = '',selection = document.getSelection();
+        if(selection.rangeCount > 0) {
+            for(var i = 0; i < selection.rangeCount; i++) {
+                ar range = selection.getRangeAt(i);
+                     html += `${i+1}:${range};`;
+                    }
+                 }
+             }
+        )
+        又比如测量一个文字节点的高度。
+        const range = document.createRange();
+        range.selectNodeContents(textNode);
+        const rect = range.getBoundingClientRect();
+        console.log(rect.bottom - rect.top);
+    */
+
+</script>

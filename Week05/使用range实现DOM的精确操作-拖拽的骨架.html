@@ -1,0 +1,27 @@
+<div id="dragable" style="width: 100px;height: 100px;background-color: pink;"></div>
+
+<script>
+    let dragable =document.getElementById("dragable");
+    //dragable的初始位置，在up中更新
+    let baseX=0,baseY=0;
+    dragable.addEventListener("mousedown",function(event){
+        //如果直接在dragable上箭头，容易出现鼠标拖动太快而离开dragable div的区域时，事件结束，产生拖断效果
+        //在现代浏览器上，在document上添加监听mouse事件，能产生全局捕捉鼠标事件的效果，即使鼠标移除浏览器
+        //也能捕捉到事件
+        //mouseup时，要把mousedown，mousemove 移除掉
+        //所以添加两个变量 up,move
+        // 记录鼠标点击时，初始位置，startX,startY
+        let startX =event.clientX,startY=event.clientY;
+        let up = event=>{
+            baseX=baseX+event.clientX-startX;
+            baseY=baseY+event.clientY-startY;
+            document.removeEventListener("mousemove",move);
+            document.removeEventListener("mouseup",up);
+        }
+        let move= event =>{
+            dragable.style.transform =`translate(${baseX+event.clientX-startX}px,${baseY+event.clientY-startY}px)`
+        }
+        document.addEventListener("mousemove",move)
+        document.addEventListener("mouseup",up)
+    })
+</script>
